@@ -16,13 +16,13 @@ count = 0
 print("С какой камеры вы будете использовать видео?(1.Боковая, 2.Курсовая")
 mesto = int(input())
 if mesto == 2:
-    x_1, y_1, x_2, y_2 = 0, 100, 1200, 1500
+    x_1, y_1, x_2, y_2 = 400, 150, 1200, 1500
 elif mesto == 1:
     x_1, y_1, x_2, y_2 = 0, 0, 500, 1500
 some_bytes = b'\x01\x02'
 logger = logging.getLogger()
 exe_path = os.getcwd()
-video_file_path = "08_15_20.mp4"  # Укажите путь к вашему видчеофайлуй
+video_file_path = "02_35_34.mp4"  # Укажите путь к вашему видчеофайлуй
 check_array = ['traffic light', 'person', 'car']
 
 
@@ -44,7 +44,7 @@ async def process_frame(detector, frame, timestamp): #
             cv2.imwrite(f'output_image_{filename}', frame)
             await object_voice(obj['name'])
             count += 1
-            mas_str.append(f'{timestamp:.0f}')
+            mas_str.append(int(timestamp))
 
 
 async def main():
@@ -72,7 +72,7 @@ async def main():
             finish = time.time()
 
         cv2.rectangle(area, (x1, y1), (x2, y2), (0, 0, 255), 2)
-        cv2.imshow('hakaton', frame)
+        cv2.imshow('hakaton', area)
         await asyncio.sleep(0)
 
         if cv2.waitKey(25) & 0xFF == ord('q'):
@@ -80,11 +80,11 @@ async def main():
 
     video_capture.release()
     cv2.destroyAllWindows()
-    global data
+    global data, mas_str
+    mas_str = [':'.join(str(datetime.timedelta(seconds=x)).split(':')[1:]) for x in mas_str]
     data = numpy.append(data, [[video_file_path,count,str(mas_str)]], axis=0)
-    with open('sw_data_new.csv', 'w') as f:
+    with open('sw_data_new.csv', 'a', newline='') as f:
         writer = csv.writer(f, quoting=csv.QUOTE_NONNUMERIC)
-        for row in data:
-            writer.writerow(row)
+        writer.writerows(data)
 if __name__ == "__main__":
     asyncio.run(main())
